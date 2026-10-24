@@ -44,3 +44,7 @@
 - БД: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
 - OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITLAB_CLIENT_ID`, `GITLAB_CLIENT_SECRET`
 - почта: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
+
+### 6. Рефакторинг FileUtil.upload
+
+Метод `FileUtil#upload` переписан с `java.io` (`File`, `FileOutputStream`) на `java.nio.file`: папка создаётся через `Files.createDirectories`, файл сохраняется через `Files.copy` из входного потока, без загрузки всего файла в память через `getBytes()`. Если файл с таким именем уже есть, он перезаписывается.
