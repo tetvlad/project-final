@@ -35,3 +35,12 @@
 - со страниц входа и регистрации (`login.html`, `register.html`) убраны кнопки VK и Yandex.
 
 Вход и регистрация через Google, GitHub и GitLab остались. Тип контакта `vk` в профиле пользователя не трогал: это поле контактов, а не вход через соцсеть.
+
+### 3. Чувствительные настройки вынесены в переменные окружения
+
+Логин и пароль БД, ключи OAuth и настройки почты убраны из `application.yaml`, теперь они берутся из переменных окружения. Для локального запуска их можно положить в файл `.env` в корне проекта, он подключается через `spring.config.import` и в репозиторий не попадает (добавлен в `.gitignore`). Шаблон `config/_application-prod.yaml` тоже переведён на переменные.
+
+Нужные переменные:
+- БД: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
+- OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITLAB_CLIENT_ID`, `GITLAB_CLIENT_SECRET`
+- почта: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
