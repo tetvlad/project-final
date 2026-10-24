@@ -27,4 +27,11 @@
 - https://habr.com/ru/articles/259055/
 
 Список выполненных задач:
-...
+
+### 2. Удалены социальные сети VK и Yandex
+
+- удалены обработчики `VkOAuth2UserDataHandler` и `YandexOAuth2UserDataHandler`;
+- из `application.yaml` убраны настройки OAuth2 для vk и yandex (`registration` и `provider`);
+- со страниц входа и регистрации (`login.html`, `register.html`) убраны кнопки VK и Yandex.
+
+Вход и регистрация через Google, GitHub и GitLab остались. Тип контакта `vk` в профиле пользователя не трогал: это поле контактов, а не вход через соцсеть.
