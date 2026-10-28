@@ -69,3 +69,14 @@
 docker build -t jirarush .
 docker run -p 8080:8080 --env-file .env -e DB_URL=jdbc:postgresql://host.docker.internal:5432/jira jirarush
 ```
+
+### 10. docker-compose с БД и nginx
+
+Добавлен `docker-compose.yml` с тремя сервисами:
+- `db` - база PostgreSQL 16;
+- `app` - само приложение, собирается из `Dockerfile` и берёт настройки из `.env`;
+- `nginx` - стоит перед приложением на 80 порту: стили, скрипты и картинки отдаёт сам, остальные запросы передаёт в `app`.
+
+В `config/nginx.conf` поменял адрес приложения с `localhost:8080` на `app:8080` и добавил заголовок `Host`, без него после входа редирект уходил на внутреннее имя контейнера.
+
+Запуск: `docker compose up -d --build`, сайт открывается на http://localhost.
