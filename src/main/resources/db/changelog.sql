@@ -329,3 +329,14 @@ values ('todo', 'ToDo', 3, 'in_progress,canceled|'),
 
 drop index UK_USER_BELONG;
 create unique index UK_USER_BELONG on USER_BELONG (OBJECT_ID, OBJECT_TYPE, USER_ID, USER_TYPE_CODE) where ENDPOINT is null;
+
+--changeset tetvlad:task_status_history
+
+insert into ACTIVITY (AUTHOR_ID, TASK_ID, UPDATED, STATUS_CODE)
+select 2, 2, timestamp '2023-06-14 10:00:00', 'in_progress' where exists (select 1 from TASK where ID = 2);
+
+insert into ACTIVITY (AUTHOR_ID, TASK_ID, UPDATED, STATUS_CODE)
+select 2, 2, timestamp '2023-06-15 15:30:00', 'ready_for_review' where exists (select 1 from TASK where ID = 2);
+
+insert into ACTIVITY (AUTHOR_ID, TASK_ID, UPDATED, STATUS_CODE)
+select 2, 2, timestamp '2023-06-16 12:00:00', 'done' where exists (select 1 from TASK where ID = 2);
