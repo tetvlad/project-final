@@ -1,0 +1,8 @@
+.git
+.idea
+.env
+target
+pgdata
+pgdata-test
+attachments
+logs
