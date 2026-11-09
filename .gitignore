@@ -7,3 +7,6 @@ attachments
 *.patch
 
 
+pgdata
+pgdata-test
+.env

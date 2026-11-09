@@ -27,4 +27,73 @@
 - https://habr.com/ru/articles/259055/
 
 Список выполненных задач:
-...
+
+### 2. Удалены социальные сети VK и Yandex
+
+- удалены обработчики `VkOAuth2UserDataHandler` и `YandexOAuth2UserDataHandler`;
+- из `application.yaml` убраны настройки OAuth2 для vk и yandex (`registration` и `provider`);
+- со страниц входа и регистрации (`login.html`, `register.html`) убраны кнопки VK и Yandex.
+
+Вход и регистрация через Google, GitHub и GitLab остались. Тип контакта `vk` в профиле пользователя не трогал: это поле контактов, а не вход через соцсеть.
+
+### 3. Чувствительные настройки вынесены в переменные окружения
+
+Логин и пароль БД, ключи OAuth и настройки почты убраны из `application.yaml`, теперь они берутся из переменных окружения. Для локального запуска их можно положить в файл `.env` в корне проекта, он подключается через `spring.config.import` и в репозиторий не попадает (добавлен в `.gitignore`). Шаблон `config/_application-prod.yaml` тоже переведён на переменные.
+
+Нужные переменные:
+- БД: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
+- OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITLAB_CLIENT_ID`, `GITLAB_CLIENT_SECRET`
+- почта: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
+
+### 6. Рефакторинг FileUtil.upload
+
+Метод `FileUtil#upload` переписан с `java.io` (`File`, `FileOutputStream`) на `java.nio.file`: папка создаётся через `Files.createDirectories`, файл сохраняется через `Files.copy` из входного потока, без загрузки всего файла в память через `getBytes()`. Если файл с таким именем уже есть, он перезаписывается.
+
+### 8. Подсчёт времени в работе и на тестировании
+
+В `TaskService` добавлены два метода:
+- `countDevTime(Task task)` - сколько задача была в работе (от `in_progress` до `ready_for_review`);
+- `countTestTime(Task task)` - сколько задача была на тестировании (от `ready_for_review` до `done`).
+
+Время считается по истории статусов задачи из таблицы `ACTIVITY`. Если нужного статуса в истории нет, возвращается ноль.
+
+В конец `changelog.sql` добавлены 3 записи в `ACTIVITY` для задачи с id 2 (статусы in_progress, ready_for_review, done). Записи добавляются только если задача с id 2 уже есть в базе, иначе на чистой базе миграция падала бы на внешних ключах. Добавлен тест `TaskServiceTest`.
+
+### 9. Dockerfile
+
+Добавлен `Dockerfile` из двух этапов: на первом проект собирается Maven-ом, на втором готовый jar и папка `resources` копируются в лёгкий образ, где есть только Java для запуска. Рабочая папка в контейнере `/opt/jirarush`, приложение слушает порт 8080. В `.dockerignore` исключены `target`, `.env`, папки с данными БД и вложениями.
+
+Сборка и запуск:
+
+```
+docker build -t jirarush .
+docker run -p 8080:8080 --env-file .env -e DB_URL=jdbc:postgresql://host.docker.internal:5432/jira jirarush
+```
+
+### 10. docker-compose с БД и nginx
+
+Добавлен `docker-compose.yml` с тремя сервисами:
+- `db` - база PostgreSQL 16;
+- `app` - само приложение, собирается из `Dockerfile` и берёт настройки из `.env`;
+- `nginx` - стоит перед приложением на 80 порту: стили, скрипты и картинки отдаёт сам, остальные запросы передаёт в `app`.
+
+В `config/nginx.conf` поменял адрес приложения с `localhost:8080` на `app:8080` и добавил заголовок `Host`, без него после входа редирект уходил на внутреннее имя контейнера.
+
+Запуск: `docker compose up -d --build`, сайт открывается на http://localhost.
+
+### 5. Тесты для ProfileRestController
+
+В `ProfileRestControllerTest` написано 10 тестов на оба метода контроллера.
+
+GET `/api/profile`: получение своего профиля, получение пустого профиля (у гостя), запрос без авторизации.
+
+PUT `/api/profile`: обновление профиля, заполнение пустого профиля, запрос без авторизации и четыре случая с неверными данными - пустые значения, неизвестный тип уведомления, неизвестный тип контакта и HTML в контакте.
+
+### 7. Теги для задач
+
+Поле `tags` в `Task` и таблица `task_tag` уже были, добавил работу с ними. В `TaskService` три метода: `getTags`, `addTag`, `deleteTag`. В `TaskController` для них REST API:
+- `GET /api/tasks/{id}/tags` - теги задачи;
+- `POST /api/tasks/{id}/tags?tag=...` - добавить тег;
+- `DELETE /api/tasks/{id}/tags?tag=...` - удалить тег.
+
+Фронт не делал. Добавлен тест `TaskTagControllerTest`.
