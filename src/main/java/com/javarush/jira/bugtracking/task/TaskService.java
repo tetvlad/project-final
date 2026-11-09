@@ -21,7 +21,9 @@ import org.springframework.util.Assert;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.javarush.jira.bugtracking.ObjectType.TASK;
 import static com.javarush.jira.bugtracking.task.TaskUtil.fillExtraFields;
@@ -131,6 +133,24 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException(String
                         .format("Not found assignment with userType=%s for task {%d} for user {%d}", userType, id, userId)));
         assignment.setEndpoint(LocalDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public Set<String> getTags(long taskId) {
+        Task task = handler.getRepository().getExisted(taskId);
+        return new HashSet<>(task.getTags());
+    }
+
+    @Transactional
+    public void addTag(long taskId, String tag) {
+        Task task = handler.getRepository().getExisted(taskId);
+        task.getTags().add(tag);
+    }
+
+    @Transactional
+    public void deleteTag(long taskId, String tag) {
+        Task task = handler.getRepository().getExisted(taskId);
+        task.getTags().remove(tag);
     }
 
     public Duration countDevTime(Task task) {

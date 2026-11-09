@@ -88,3 +88,12 @@ docker run -p 8080:8080 --env-file .env -e DB_URL=jdbc:postgresql://host.docker.
 GET `/api/profile`: получение своего профиля, получение пустого профиля (у гостя), запрос без авторизации.
 
 PUT `/api/profile`: обновление профиля, заполнение пустого профиля, запрос без авторизации и четыре случая с неверными данными - пустые значения, неизвестный тип уведомления, неизвестный тип контакта и HTML в контакте.
+
+### 7. Теги для задач
+
+Поле `tags` в `Task` и таблица `task_tag` уже были, добавил работу с ними. В `TaskService` три метода: `getTags`, `addTag`, `deleteTag`. В `TaskController` для них REST API:
+- `GET /api/tasks/{id}/tags` - теги задачи;
+- `POST /api/tasks/{id}/tags?tag=...` - добавить тег;
+- `DELETE /api/tasks/{id}/tags?tag=...` - удалить тег.
+
+Фронт не делал. Добавлен тест `TaskTagControllerTest`.
